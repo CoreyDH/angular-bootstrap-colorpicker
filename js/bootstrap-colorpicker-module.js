@@ -13,20 +13,25 @@ angular.module('colorpicker.module', [])
           var
             scrollX = 0,
             scrollY = 0,
-            rect = elem.getBoundingClientRect();
+            rect = elem.getBoundingClientRect(),
+            windowOffset = { x:0, y:0 };
+
           while (elem && !isNaN(elem.offsetLeft) && !isNaN(elem.offsetTop)) {
             if (!fixedPosition && elem.tagName === 'BODY') {
               scrollX += document.documentElement.scrollLeft || elem.scrollLeft;
               scrollY += document.documentElement.scrollTop || elem.scrollTop;
+              windowOffset.x = window.pageXOffset;
+              windowOffset.y = window.pageYOffset;
             } else {
               scrollX += elem.scrollLeft;
               scrollY += elem.scrollTop;
             }
             elem = elem.offsetParent;
           }
+
           return {
-            top: rect.top + window.pageYOffset,
-            left: rect.left + window.pageXOffset,
+            top: rect.top + windowOffset.y,
+            left: rect.left + windowOffset.x,
             scrollX: scrollX,
             scrollY: scrollY
           };
@@ -289,7 +294,6 @@ angular.module('colorpicker.module', [])
                       '</div>',
               colorpickerTemplate = angular.element(template),
               pickerColor = Color,
-              componentSizePx,
               sliderAlpha,
               sliderHue = colorpickerTemplate.find('colorpicker-hue'),
               sliderSaturation = colorpickerTemplate.find('colorpicker-saturation'),
@@ -413,7 +417,7 @@ angular.module('colorpicker.module', [])
           }
 
           function mousemove(event) {
-            var 
+            var
                 left = Slider.getLeftPosition(event),
                 top = Slider.getTopPosition(event),
                 slider = Slider.getSlider();
@@ -460,35 +464,38 @@ angular.module('colorpicker.module', [])
 
           function getColorpickerTemplatePosition() {
             var
-                positionValue,
-                positionOffset = Helper.getOffset(elem[0]);
+                positionValue = {},
+                positionOffset = Helper.getOffset(elem[0], fixedPosition);
 
             if(angular.isDefined(attrs.colorpickerParent)) {
               positionOffset.left = 0;
               positionOffset.top = 0;
             }
 
-            if (position === 'top') {
-              positionValue =  {
-                'top': positionOffset.top - 147,
-                'left': positionOffset.left
-              };
-            } else if (position === 'right') {
-              positionValue = {
-                'top': positionOffset.top,
-                'left': positionOffset.left + 126
-              };
-            } else if (position === 'bottom') {
-              positionValue = {
-                'top': positionOffset.top + elem[0].offsetHeight + 2,
-                'left': positionOffset.left
-              };
-            } else if (position === 'left') {
-              positionValue = {
-                'top': positionOffset.top,
-                'left': positionOffset.left - 150
-              };
+            switch(position) {
+
+              case 'top' :
+                positionValue.top = positionOffset.top - (componentSize + 50);
+                positionValue.left = positionOffset.left;
+                break;
+
+              case 'right' :
+                positionValue.top = positionOffset.top;
+                positionValue.left = positionOffset.left + elem[0].offsetWidth + 2;
+                break;
+
+              case 'bottom' :
+                positionValue.top = positionOffset.top + elem[0].offsetHeight + 2;
+                positionValue.left = positionOffset.left;
+                break;
+
+              case 'left' :
+                positionValue.top = positionOffset.top;
+                positionValue.left = positionOffset.left - componentSize - elem[0].offsetWidth/2 - 5;
+                break;
+
             }
+
             return {
               'top': positionValue.top + 'px',
               'left': positionValue.left + 'px'
