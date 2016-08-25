@@ -491,7 +491,7 @@ angular.module('colorpicker.module', [])
 
               case 'left' :
                 positionValue.top = positionOffset.top;
-                positionValue.left = positionOffset.left - componentSize - elem[0].offsetWidth/2 - 5;
+                positionValue.left = positionOffset.left - componentSize - 30;
                 break;
 
             }
